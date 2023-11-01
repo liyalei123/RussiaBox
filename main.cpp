@@ -106,7 +106,8 @@ int main()
 	destory_win(hint_win);
 	destory_win(score_win);
 	delete pp;
-	system("clear");
+	clear(); 
+	refresh();
 
 	int row,col;
 	getmaxyx(stdscr,row,col);
@@ -123,6 +124,11 @@ WINDOW *create_newwin(int height, int width, int starty, int startx)
 {
 	WINDOW *local_win;
 	local_win = newwin(height, width, starty, startx);
+	if (local_win == NULL) {  
+        // 如果newwin失败，打印错误信息并�?出程�?  
+        printw("Error creating window: insufficient memory");   
+        return 1;  
+    }  
 	box(local_win,0,0);
 	wrefresh(local_win);
 	return local_win;
@@ -133,6 +139,11 @@ void destory_win(WINDOW *local_win)
 	wborder(local_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
 	wrefresh(local_win);
 	delwin(local_win);
+	if (delwin(local_win, NULL) == ERR) {  
+        // 如果delwin失败，打印错误信息并�?出程�?  
+        printw("Error deleting window");   
+        return 1;  
+    }  
 }
 
 
@@ -140,6 +151,7 @@ void Piece::initial()
 {
 	score=0;
 	game_over=false;
+
 	for(int i =0;i<game_win_height;i++)
 		for(int j=0;j<game_win_width;j++){
 			if(i==0 || i==game_win_height-1 || j==0 || j==game_win_width-1){
@@ -282,15 +294,31 @@ void Piece::rotate()
 		for(int i=0; i<4;i++)
 			for(int j=0;j<4;j++){
 				if(temp_piece[i][j]==1){
-					mvwaddch(game_win,head_y+i,head_x+j,' ');
-					wrefresh(game_win);
+					 int result = mvwaddch(game_win, head_y + i, head_x + j, ' ');  
+                    if (result != OK) {  
+                        std::cerr << "Error moving cursor: " << strerror(errno) << std::endl;  
+                        return;  // or you can handle the error in some other way  
+                    }  
+                    result = wrefresh(game_win);  
+                    if (result != OK) {  
+                        std::cerr << "Error refreshing window: " << strerror(errno) << std::endl;  
+                        return;  // or you can handle the error in some other way  
 				}
 			}
+		}
 		for(int i=0; i<size_h;i++)
 			for(int j=0;j<size_w;j++){
 				if(this->box_shape[i][j]==1){
-					mvwaddch(game_win,head_y+i,head_x+j,'#');
-					wrefresh(game_win);
+					 int result = mvwaddch(game_win, head_y + i, head_x + j, '#');  
+                    if (result != OK) {  
+                        std::cerr << "Error moving cursor: " << strerror(errno) << std::endl;  
+                        return;  // or you can handle the error in some other way  
+                    }  
+                    result = wrefresh(game_win);  
+                    if (result != OK) {  
+                        std::cerr << "Error refreshing window: " << strerror(errno) << std::endl;  
+                        return;  // or you can handle the error in some other way  
+                    }  
 				}
 		}
 
@@ -493,3 +521,4 @@ void Piece::score_next(){
 				wrefresh(hint_win);
 		}
 }
+
